@@ -1,0 +1,7 @@
+[package]
+name = "ray_caster"
+version = "0.1.0"
+authors = ["Nathan <coolinventions123@gmail.com>"]
+
+[dependencies]
+sfml = "0.14.0"
