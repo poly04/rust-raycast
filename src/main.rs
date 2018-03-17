@@ -5,12 +5,18 @@ use sfml::graphics::*;
 use sfml::system::*;
 use sfml::window::*;
 
+use std::f32;
+
 mod map;
 mod camera;
 use map::Map;
 use camera::*;
 
 fn main() {
+
+	let one: f32 = 1.0;
+	println!("1.0.ceil() = {}", one.ceil());
+
     let desktop = VideoMode::desktop_mode();
     let mut window = RenderWindow::new(VideoMode::new(800, 600, desktop.bits_per_pixel),
     								   "Ray Caster",
@@ -56,9 +62,9 @@ fn main() {
     		camera.move_forward(-move_speed, &mut map);
     	}
     	if Key::A.is_pressed() {
-    		camera.strife(move_speed, &mut map);
-    	} else if Key::D.is_pressed() {
     		camera.strife(-move_speed, &mut map);
+    	} else if Key::D.is_pressed() {
+    		camera.strife(move_speed, &mut map);
     	}
 
     	player_dot.set_position(camera.position);

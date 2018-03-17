@@ -44,6 +44,15 @@ impl Map {
 	}
 
 	pub fn get_tile(&mut self, x: i32, y: i32) -> TileEnum {
+
+		if x < 0 || x > 10 {
+			return TileEnum::Edge;
+		}
+
+		if y < 0 || y > 10 {
+			return TileEnum::Edge;
+		}
+
 		self.tiles[x as usize][y as usize]
 	}
 
