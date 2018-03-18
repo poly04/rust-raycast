@@ -13,10 +13,6 @@ use map::Map;
 use camera::*;
 
 fn main() {
-
-	let one: f32 = 1.0;
-	println!("1.0.ceil() = {}", one.ceil());
-
     let desktop = VideoMode::desktop_mode();
     let mut window = RenderWindow::new(VideoMode::new(800, 600, desktop.bits_per_pixel),
     								   "Ray Caster",
@@ -37,6 +33,7 @@ fn main() {
     player_dot.set_fill_color(&Color::rgb(0, 0, 255));
     let mut render_target = RenderTexture::new(800, 600, false).unwrap();
     let mut img_arr: Vec<u8> = vec![0 as u8; 800*600*4];
+    let texture = Image::from_file("bricks.bmp").unwrap();
 
     while window.is_open() {
 
@@ -77,39 +74,24 @@ fn main() {
     	//render_target.set_active(true);
     	//render_target.clear(&Color::rgb(0, 0, 0));
     	img_arr = vec![0 as u8; 800*600*4];
+    	
     	for x in 0..800 {
     		let slice = camera.calculate_ray(&mut map, x);
     		let height = clamp(slice.height, 0.0, 600.0);
 
-    		for y in 0..(height as i32) { 
-    			img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4)    ) as usize] = slice.colour[0].r;
-    			img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4) + 1) as usize] = slice.colour[0].g;
-    			img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4) + 2) as usize] = slice.colour[0].b;
-    			img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4) + 3) as usize] = 255;
-    		}
+    		let texture_xoffs = (texture.size().x as f32) * slice.texture_xoffs;
 
-    		/*
     		for y in 0..(height as i32) {
-    			img.set_pixel(x as u32, ((y as f32) + (300.0 - (height / 2.0))) as u32, &Color::rgb(map_range(y as f32, 0.0, height, 0.0, 255.0) as u8, 
-    													  map_range(y as f32, 0.0, height, 0.0, 255.0) as u8,
-    													  map_range(y as f32, 0.0, height, 0.0, 255.0) as u8));
+    			let texture_y = map_range(y as f32, 0.0, slice.height, 0.0, texture.size().y as f32);
+    			//if slice.height < 600.0 && slice.height > 0.0 {
+					img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4)    ) as usize] = texture.pixel_at(texture_xoffs.floor() as u32, texture_y.floor() as u32).r;
+					img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4) + 1) as usize] = texture.pixel_at(texture_xoffs.floor() as u32, texture_y.floor() as u32).g;
+					img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4) + 2) as usize] = texture.pixel_at(texture_xoffs.floor() as u32, texture_y.floor() as u32).b;
+					img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4) + 3) as usize] = texture.pixel_at(texture_xoffs.floor() as u32, texture_y.floor() as u32).a;
+    			//}
+    			
     		}
-    		*/
-
-    		/*
-    		let mut ystrip = Image::new(1, height as u32);
-    		for y in 0..(height as i32) {
-    			ystrip.set_pixel(0, y as u32, &Color::rgb(map_range(y as f32, 0.0, height, 0.0, 255.0) as u8, 
-    													  map_range(y as f32, 0.0, height, 0.0, 255.0) as u8,
-    													  map_range(y as f32, 0.0, height, 0.0, 255.0) as u8));
-    		}
-    		let text = Texture::from_image(&ystrip).unwrap();
-    		let mut spr = Sprite::new();
-    		spr.set_texture(&text, true);
-    		spr.set_origin(Vector2f::new(0.0, height/2.0));
-    		spr.set_position(Vector2f::new(x as f32, 300.0));
-    		render_target.draw(&spr);
-    		*/
+    		
     	}
     	let mut img = Image::create_from_pixels(800, 600, &img_arr).unwrap();
     	let text = Texture::from_image(&img).unwrap();
@@ -144,7 +126,13 @@ fn main() {
     		}
     	}
 
+    	//test texture loading
+    	//let texture = Texture::from_file("texture.bmp").unwrap();
+    	//let sprite = Sprite::with_texture(&texture);
+
+
     	window.draw(&player_dot);
+    	//window.draw(&sprite);
     	window.display();
 
     }

@@ -27,7 +27,7 @@ impl Ray {
 		}
 	}
 
-	pub fn move_forward(&mut self, amt: f32) {
+	pub fn move_forward(&mut self) {
 		let rot_vec = Vector2f::new(self.rot.sin(), self.rot.cos());
 
 		let mut map_pos = Vector2f::new((self.position.x / 10.0).round(), (self.position.y / 10.0).round());
@@ -103,14 +103,14 @@ impl Ray {
 
 pub struct XSlice {
 	pub height: f32,
-	pub colour: [Color; 64]
+	pub texture_xoffs: f32
 }
 
 impl XSlice {
 	pub fn new() -> XSlice {
 		XSlice {
 			height: 0.0,
-			colour: [Color::rgb(0, 0, 0); 64]
+			texture_xoffs: 0.0
 		}
 	}
 }
@@ -144,43 +144,6 @@ impl Camera {
 
 		let rot_vec = Vector2f::new(ray.rot.sin(), ray.rot.cos());
 
-		/*START
-		let rot_vec = Vector2f::new(ray.rot.sin(), ray.rot.cos());
-
-		let mut y_angle: f32 = 90.0;
-		let mut nearest_y = (ray.position.y / 10.0);
-		if rot_vec.y.signum() > 0.0 {
-			nearest_y = nearest_y.ceil();
-		} else {
-			nearest_y = nearest_y.floor();
-			y_angle = 270.0;
-		}
-
-		let mut x_angle: f32 = 0.0;
-		let mut nearest_x = (ray.position.x / 10.0);
-		if rot_vec.x.signum() > 0.0 {
-			nearest_x = nearest_x.ceil();
-		} else {
-			nearest_x = nearest_x.floor();
-			x_angle = 180.0;
-		}
-
-		let y_side_dist = (ray.position.y - (nearest_y * 10.0)).abs();
-		let y_side_angle = (y_angle.to_radians() - ray.rot);
-		let y_side_amt = y_side_dist / y_side_angle.cos();
-
-		let x_side_dist = (ray.position.x - (nearest_x * 10.0)).abs();
-		let x_side_angle = (x_angle.to_radians() - ray.rot);
-		let x_side_amt = x_side_dist / x_side_angle.cos();
-
-		if x_side_amt < y_side_amt {
-			ray.move_forward(x_side_amt);
-		} else {
-			ray.move_forward(y_side_amt);
-		}
-		println!("New ray pos X: {} Y: {}", ray.position.x, ray.position.y);
-		*/
-
 		let mut map_x: i32 = match rot_vec.x > 0.0 {
 							true => (ray.position.x / 10.0).floor() as i32,
 							_ => ((ray.position.x / 10.0).ceil() - 1.0) as i32 };
@@ -188,12 +151,11 @@ impl Camera {
 							true => (ray.position.y / 10.0).floor() as i32,
 							_ => ((ray.position.y / 10.0).ceil() - 1.0) as i32 };
 
-		let amt = 1.0;
 		while match map.get_tile(map_x, map_y) {
 				TileEnum::Air => true,
 				_ => false
 		} {
-			ray.move_forward(amt);
+			ray.move_forward();
 
 			map_x = match rot_vec.x > 0.0 {
 							true => ((ray.position.x / 10.0).floor()) as i32,
@@ -207,11 +169,19 @@ impl Camera {
 
 		let mut slice = XSlice::new();
 		slice.height = (1.0 / ray.distance) * 3000.0;
-		slice.colour = match map.get_tile(map_x, map_y) {
-							TileEnum::Edge => [Color::rgb(0, 255, 255); 64],
-							TileEnum::Solid => [Color::rgb(255, 0, 0); 64],
-							_ => [Color::rgb(0, 0, 0); 64]
-						 };
+
+		let pos_in_block = Vector2f::new(((ray.position.x - (map_x * 10) as f32) / 10.0), ((ray.position.y - (map_y * 10) as f32) / 10.0));
+		let mut x_offs: f32 = 0.0;
+		if pos_in_block.x == 0.0 || pos_in_block.x == 1.0 {
+			x_offs = pos_in_block.y;
+		}
+
+		if pos_in_block.y == 0.0 || pos_in_block.y == 1.0 {
+			x_offs = pos_in_block.x;
+		}
+		//println!("Pos in block: {}, {}", pos_in_block.x, pos_in_block.y);
+
+		slice.texture_xoffs = x_offs;
 
 		return slice;
 	}
