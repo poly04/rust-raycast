@@ -78,11 +78,13 @@ fn main() {
     	for x in 0..800 {
     		let slice = camera.calculate_ray(&mut map, x);
     		let height = clamp(slice.height, 0.0, 600.0);
+            let height_diff = (slice.height - height) / 2.0;
 
     		let texture_xoffs = (texture.size().x as f32) * slice.texture_xoffs;
 
     		for y in 0..(height as i32) {
-    			let texture_y = map_range(y as f32, 0.0, slice.height, 0.0, texture.size().y as f32);
+    			//let mapped_y = map_range(y as f32, 0.0, height, 0.0, slice.height);
+    			let texture_y = map_range((y as f32) + height_diff, 0.0, slice.height, 0.0, texture.size().y as f32);
     			//if slice.height < 600.0 && slice.height > 0.0 {
 					img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4)    ) as usize] = texture.pixel_at(texture_xoffs.floor() as u32, texture_y.floor() as u32).r;
 					img_arr[(((x + (y + (300 - (height/2.0) as i32))*800) * 4) + 1) as usize] = texture.pixel_at(texture_xoffs.floor() as u32, texture_y.floor() as u32).g;
